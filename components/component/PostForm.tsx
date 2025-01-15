@@ -5,29 +5,46 @@ import { Button } from "@/components/ui/button";
 import { SendIcon } from "./Icons";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { z } from "zod";
 
 export default function PostForm() {
-  const { userId } = auth();
 
   const addPostAction = async (formData: FormData) => {
     "use server"
-    const postText = formData.get("post") as string
-    console.log(postText)
-    console.log(userId)
-
-    if (!userId) {
-      return;
-    }
 
     try {
+      const { userId } = auth();
+      if (!userId) {
+        return;
+      }
+
+      const postText = formData.get("post") as string
+      const postTextSchema = z.string().min(1, '入力OK？').max(140, '140字以内')
+      const validatedPostText = postTextSchema.parse(postText)
+
       await prisma.post.create({
         data: {
-          content: postText,
+          content: validatedPostText,
           authorId: userId,
         }
       })
-    } catch (err) {
-      console.log(err)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return {
+          error: error.errors.map((e) => e.message).join(", "),
+          success: false
+        }
+      } else if (error instanceof Error) {
+        return {
+          error: error.message,
+          success: false
+        }
+      } else {
+        return {
+          error: '予期せぬエラー',
+          success: false
+        }
+      }
     }
   }
 
