@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "./prisma";
+import { revalidatePath } from "next/cache";
 
 type State = {
     error?: string | undefined;
@@ -28,6 +29,8 @@ export const addPostAction = async (prevState: State, formData: FormData): Promi
                 authorId: userId,
             }
         })
+
+        revalidatePath("/")
 
         return {
             error: undefined,
