@@ -3,6 +3,7 @@ import { ClockIcon } from "./Icons";
 import PostInteraction from "./PostInteraction";
 
 const Post = (post: any) => {
+  console.log("post = ", post)
   return (
     <div
       key={post.id}
