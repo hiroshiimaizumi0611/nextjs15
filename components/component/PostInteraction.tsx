@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "../ui/button"
 import { HeartIcon, MessageCircleIcon, Share2Icon } from "./Icons"
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 type Props = {
     postId: string;
     initialLikes: string[];
@@ -30,12 +31,14 @@ const PostInteraction = ({ postId, initialLikes, commentNumber }: Props) => {
                         id: existingLike.id
                     }
                 })
+                revalidatePath("/")
             } else {
                 await prisma.like.create({
                     data: {
                         postId, userId
                     }
                 })
+                revalidatePath("/")
             }
         } catch (error) {
             console.log(error)
