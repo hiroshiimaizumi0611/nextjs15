@@ -2,8 +2,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ClockIcon } from "./Icons";
 import PostInteraction from "./PostInteraction";
 
-const Post = (post: any) => {
-  console.log("post = ", post)
+const Post = ({ post }: any) => {
   return (
     <div
       key={post.id}
@@ -15,8 +14,8 @@ const Post = (post: any) => {
           <AvatarFallback>AC</AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="text-lg font-bold">{post.author?.name}</h3>
-          <p className="text-muted-foreground">{post.author?.name}</p>
+          <h3 className="text-lg font-bold">{post.author?.name || 'No Author name'}</h3>
+          <p className="text-muted-foreground">{post.author?.name || 'No Author name'}</p>
         </div>
       </div>
       <div className="space-y-2">
