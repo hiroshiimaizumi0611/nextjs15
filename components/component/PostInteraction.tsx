@@ -1,60 +1,62 @@
-import { prisma } from "@/lib/prisma";
+"use client"
+
 import { Button } from "../ui/button"
 import { HeartIcon, MessageCircleIcon, Share2Icon } from "./Icons"
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { useOptimistic } from "react";
+import { likeAction } from "@/lib/action";
+import { useAuth } from "@clerk/nextjs";
 type Props = {
     postId: string;
     initialLikes: string[];
     commentNumber: number;
 }
 
-const PostInteraction = ({ postId, initialLikes, commentNumber }: Props) => {
+interface LikeState {
+    count: number;
+    isLiked: boolean;
+}
 
-    const likeAction = async () => {
-        "use server";
-        const { userId } = auth()
-        if (!userId) {
-            throw new Error("User is not authenticated.")
-        }
+const PostInteraction = ({postId, initialLikes, commentNumber }: Props) => {
+
+    const { userId } = useAuth();
+
+    const initialState: LikeState = {
+        count: initialLikes.length,
+        isLiked: userId ? initialLikes.includes(userId) : false,
+    };
+
+    const [optimisticLike, addOptimisticLike] = useOptimistic<LikeState, void>(
+        initialState,
+        (currentState) => ({
+            count: currentState.isLiked
+                ? currentState.count - 1
+                : currentState.count + 1,
+            isLiked: !currentState.isLiked,
+        })
+    );
+
+    const handleLikeSubmit = async (formData: FormData) => {
+        addOptimisticLike();
 
         try {
-            const existingLike = await prisma.like.findFirst({
-                where: {
-                    postId,
-                    userId
-                }
-            })
-            if (existingLike) {
-                await prisma.like.delete({
-                    where: {
-                        id: existingLike.id
-                    }
-                })
-                revalidatePath("/")
-            } else {
-                await prisma.like.create({
-                    data: {
-                        postId, userId
-                    }
-                })
-                revalidatePath("/")
-            }
-        } catch (error) {
-            console.log(error)
+            await likeAction(formData);
+        } catch (err) {
+            console.log(err);
         }
-    }
+    };
+
     return (
         <div className="flex items-center">
-            <form action={likeAction}>
+            <form action={handleLikeSubmit}>
+            <input type="hidden" name="postId" value={postId} />
                 <Button variant="ghost" size="icon">
                     <HeartIcon className="h-5 w-5 text-muted-foreground" />
                 </Button>
-                <span className="-ml-1">{initialLikes?.length || 0}</span>
+                <span className="-ml-1">{optimisticLike.count}</span>
                 <Button variant="ghost" size="icon">
                     <MessageCircleIcon className="h-5 w-5 text-muted-foreground" />
                 </Button>
-                <span className="-ml-1">{commentNumber || 0}</span>
+                <span className="-ml-1">{commentNumber}</span>
                 <Button variant="ghost" size="icon">
                     <Share2Icon className="h-5 w-5 text-muted-foreground" />
                 </Button>

@@ -56,3 +56,46 @@ export const addPostAction = async (prevState: State, formData: FormData): Promi
         }
     }
 }
+
+export const likeAction = async (
+    formData: FormData
+) => {
+    const { userId } = auth();
+
+    if (!userId) {
+        return { likes: [], error: "User is not authenticated" };
+    }
+
+    const postId = formData.get("postId") as string;
+    console.log('postId = ' , postId)
+
+    try {
+        const existingLike = await prisma.like.findFirst({
+            where: {
+                postId,
+                userId,
+            },
+        });
+
+        if (existingLike) {
+            await prisma.like.delete({
+                where: {
+                    id: existingLike.id,
+                },
+            });
+
+            revalidatePath("/");
+        } else {
+            await prisma.like.create({
+                data: {
+                    postId,
+                    userId,
+                },
+            });
+
+            revalidatePath("/");
+        }
+    } catch (err) {
+        console.log(err);
+    }
+};
