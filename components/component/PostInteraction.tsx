@@ -16,7 +16,7 @@ interface LikeState {
     isLiked: boolean;
 }
 
-const PostInteraction = ({postId, initialLikes, commentNumber }: Props) => {
+const PostInteraction = ({ postId, initialLikes, commentNumber }: Props) => {
 
     const { userId } = useAuth();
 
@@ -48,11 +48,11 @@ const PostInteraction = ({postId, initialLikes, commentNumber }: Props) => {
     return (
         <div className="flex items-center">
             <form action={handleLikeSubmit}>
-            <input type="hidden" name="postId" value={postId} />
+                <input type="hidden" name="postId" value={postId} />
                 <Button variant="ghost" size="icon">
-                    <HeartIcon className="h-5 w-5 text-muted-foreground" />
+                    <HeartIcon className={`h-5 w-5 ${optimisticLike.isLiked ? "text-destructive" : "text-muted-foreground"}`} />
                 </Button>
-                <span className="-ml-1">{optimisticLike.count}</span>
+                <span className={`-ml-1 ${optimisticLike.isLiked ? "text-destructive" : ""}`}>{optimisticLike.count}</span>
                 <Button variant="ghost" size="icon">
                     <MessageCircleIcon className="h-5 w-5 text-muted-foreground" />
                 </Button>
