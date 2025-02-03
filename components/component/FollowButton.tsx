@@ -1,9 +1,40 @@
 import { Button } from "../ui/button"
 
-const FollowButton = () => {
+interface Props {
+    isCurrentUser: boolean
+    isFollowing: boolean
+}
+
+const FollowButton = ({ isCurrentUser, isFollowing }: Props) => {
+
+    const getButtonContent = () => {
+        if (isCurrentUser) {
+            return "プロフィール編集"
+        }
+
+        if (isFollowing) {
+            return "フォロー中"
+        }
+
+        return "フォローする"
+    }
+
+    const getButtonVariant = () => {
+        if (isCurrentUser) {
+            return "secondary"
+        }
+
+        if (isFollowing) {
+            return "outline"
+        }
+
+        return "default"
+
+    }
+
     return (
         <div>
-            <Button className="w-full">Follow</Button>
+            <Button variant={getButtonVariant()} className="w-full">{getButtonContent()}</Button>
         </div>
     )
 }
