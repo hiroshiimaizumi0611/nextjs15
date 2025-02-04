@@ -1,11 +1,13 @@
+import { followAction } from "@/lib/action"
 import { Button } from "../ui/button"
 
 interface Props {
     isCurrentUser: boolean
     isFollowing: boolean
+    userId: string
 }
 
-const FollowButton = ({ isCurrentUser, isFollowing }: Props) => {
+const FollowButton = ({ isCurrentUser, isFollowing, userId }: Props) => {
 
     const getButtonContent = () => {
         if (isCurrentUser) {
@@ -33,9 +35,9 @@ const FollowButton = ({ isCurrentUser, isFollowing }: Props) => {
     }
 
     return (
-        <div>
+        <form action={followAction.bind(null, userId)}>
             <Button variant={getButtonVariant()} className="w-full">{getButtonContent()}</Button>
-        </div>
+        </form>
     )
 }
 

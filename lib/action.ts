@@ -67,7 +67,7 @@ export const likeAction = async (
     }
 
     const postId = formData.get("postId") as string;
-    console.log('postId = ' , postId)
+    console.log('postId = ', postId)
 
     try {
         const existingLike = await prisma.like.findFirst({
@@ -99,3 +99,42 @@ export const likeAction = async (
         console.log(err);
     }
 };
+
+export const followAction = async (userId: string) => {
+    const { userId: currentUserId } = auth();
+
+    if (!currentUserId) {
+        return { likes: [], error: "User is not authenticated" };
+    }
+
+    try {
+        const existingFolow = await prisma.follow.findFirst({
+            where: {
+                followerId: currentUserId,
+                followingId: userId,
+            },
+        });
+
+        if (existingLike) {
+            await prisma.like.delete({
+                where: {
+                    id: existingLike.id,
+                },
+            });
+
+            revalidatePath("/");
+        } else {
+            await prisma.like.create({
+                data: {
+                    postId,
+                    userId,
+                },
+            });
+
+            revalidatePath("/");
+        }
+    } catch (err) {
+        console.log(err);
+    }
+
+}
