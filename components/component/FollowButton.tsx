@@ -1,5 +1,8 @@
+'use client'
+
 import { followAction } from "@/lib/action"
 import { Button } from "../ui/button"
+import { useOptimistic } from "react"
 
 interface Props {
     isCurrentUser: boolean
@@ -9,12 +12,18 @@ interface Props {
 
 const FollowButton = ({ isCurrentUser, isFollowing, userId }: Props) => {
 
+    const [optimisticFollow, addOptimisticFollow] = useOptimistic<{ isFollowing: boolean }, void>({
+        isFollowing
+    }, (currentState) => ({
+        isFollowing: !currentState.isFollowing
+    }))
+
     const getButtonContent = () => {
         if (isCurrentUser) {
             return "プロフィール編集"
         }
 
-        if (isFollowing) {
+        if (optimisticFollow.isFollowing) {
             return "フォロー中"
         }
 
@@ -26,7 +35,7 @@ const FollowButton = ({ isCurrentUser, isFollowing, userId }: Props) => {
             return "secondary"
         }
 
-        if (isFollowing) {
+        if (optimisticFollow.isFollowing) {
             return "outline"
         }
 
@@ -34,8 +43,18 @@ const FollowButton = ({ isCurrentUser, isFollowing, userId }: Props) => {
 
     }
 
+    const handleFollowAction = async () => {
+        try {
+            addOptimisticFollow()
+            await followAction(userId)
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
-        <form action={followAction.bind(null, userId)}>
+        <form action={handleFollowAction}>
             <Button variant={getButtonVariant()} className="w-full">{getButtonContent()}</Button>
         </form>
     )
