@@ -108,30 +108,31 @@ export const followAction = async (userId: string) => {
     }
 
     try {
-        const existingFolow = await prisma.follow.findFirst({
+        const existingFollow = await prisma.follow.findFirst({
             where: {
                 followerId: currentUserId,
                 followingId: userId,
             },
         });
 
-        if (existingLike) {
-            await prisma.like.delete({
+        if (existingFollow) {
+            await prisma.follow.delete({
                 where: {
-                    id: existingLike.id,
+                    followerId_followingId: {
+                        followerId: currentUserId,
+                        followingId: userId
+                    }
                 },
             });
-
-            revalidatePath("/");
         } else {
-            await prisma.like.create({
+            await prisma.follow.create({
                 data: {
-                    postId,
-                    userId,
+                    followerId: currentUserId,
+                    followingId: userId
                 },
             });
 
-            revalidatePath("/");
+            revalidatePath(`profile/${userId}`);
         }
     } catch (err) {
         console.log(err);
