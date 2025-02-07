@@ -44,6 +44,10 @@ const FollowButton = ({ isCurrentUser, isFollowing, userId }: Props) => {
     }
 
     const handleFollowAction = async () => {
+        if (isCurrentUser) {
+            return;
+        }
+
         try {
             addOptimisticFollow()
             await followAction(userId)
